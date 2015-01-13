@@ -41,18 +41,15 @@ class Brinkscheckout extends PaymentModule
 		'BackOfficeHeader',
 	);
 	private $html = '';
-	private $post_errors = array();
 
 	public function __construct()
 	{
 		$this->name = 'brinkscheckout';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.6.5';
+		$this->version = '1.6.6';
 		$this->author = 'belvg';
 		$this->bootstrap = true;
 		$this->module_key = '';
-
-		$this->initConfigVars();
 
 		parent::__construct();
 
@@ -60,48 +57,32 @@ class Brinkscheckout extends PaymentModule
 		$this->displayName = 'Brink\'s Checkout Payment API';
 		$this->description = $this->l('Brink\'s Checkout: accept fast, safe and easy payments. Start selling now!');
 
-		if (!isset($this->sid) || !isset($this->currencies))
+		if (!Configuration::get('TWOCHECKOUT_SID') || !isset($this->currencies))
 			$this->warning = $this->l('your Brink\'s vendor account number must be configured in order to use this module correctly');
-	}
-
-	public function initConfigVars()
-	{
-		$config = Configuration::getMultiple(array('TWOCHECKOUT_SID', 'TWOCHECKOUT_PUBLIC', 'TWOCHECKOUT_PRIVATE',
-			'TWOCHECKOUT_SANDBOX', 'TWOCHECKOUT_ADMINAPI_NAME', 'TWOCHECKOUT_ADMINAPI_PASS'));
-
-		if (isset($config['TWOCHECKOUT_SID']))
-			$this->sid = $config['TWOCHECKOUT_SID'];
-		if (isset($config['TWOCHECKOUT_PUBLIC']))
-			$this->public = $config['TWOCHECKOUT_PUBLIC'];
-		if (isset($config['TWOCHECKOUT_PRIVATE']))
-			$this->private = $config['TWOCHECKOUT_PRIVATE'];
-		if (isset($config['TWOCHECKOUT_SANDBOX']))
-			$this->sandbox = $config['TWOCHECKOUT_SANDBOX'];
-		if (isset($config['TWOCHECKOUT_ADMINAPI_NAME']))
-			$this->sandbox = $config['TWOCHECKOUT_ADMINAPI_NAME'];
-		if (isset($config['TWOCHECKOUT_ADMINAPI_PASS']))
-			$this->sandbox = $config['TWOCHECKOUT_ADMINAPI_PASS'];
 	}
 
 	public function install()
 	{
 		//Call PaymentModule default install function
 		$install = parent::install();
-		foreach ($this->hooks as $hook)
+		if ($install)
 		{
-			if (!$this->registerHook($hook))
+			foreach ($this->hooks as $hook)
+			{
+				if (!$this->registerHook($hook))
+					return false;
+			}
+
+			if (!$this->installDb())
 				return false;
 		}
-
-		if (!$this->installDb())
-			return false;
 
 		return $install;
 	}
 
 	protected function installDb()
 	{
-		if (!Db::getInstance()->Execute('CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'twocheckout_order` (
+		return Db::getInstance()->Execute('CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'twocheckout_order` (
                 `id_twocheckout_order` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `reference` varchar(9),
                 `order_number` BIGINT unsigned NOT NULL,
@@ -111,9 +92,7 @@ class Brinkscheckout extends PaymentModule
 				`date_upd` datetime NOT NULL,
                 PRIMARY KEY (`id_twocheckout_order`),
 				KEY `reference` (`reference`)
-            ) ENGINE= '._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8'))
-			return false;
-		return true;
+            ) ENGINE= '._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8');
 	}
 
 	public function uninstall()
@@ -347,9 +326,18 @@ class Brinkscheckout extends PaymentModule
 		$order_process = Configuration::get('PS_ORDER_PROCESS_TYPE') ? 'order-opc' : 'order';
 		$cart = $this->context->cart;
 		$user = $this->context->customer;
+		if (!Validate::isLoadedObject($cart) || !Validate::isLoadedObject($user))
+		{
+			$this->setSessionMessage('2co_message', $this->l('Payment Authorization Failed: seems like your shopping cart or user is not valid'));
+			Tools::redirect($this->context->link->getPageLink($order_process));
+		}
 		$delivery = new Address((int)$cart->id_address_delivery);
 		$invoice = new Address((int)$cart->id_address_invoice);
-		$customer = new Customer((int)$cart->id_customer);
+		if (!Validate::isLoadedObject($delivery) || !Validate::isLoadedObject($invoice))
+		{
+			$this->setSessionMessage('2co_message', $this->l('Payment Authorization Failed: seems like your delivery or invoice address is not valid'));
+			Tools::redirect($this->context->link->getPageLink($order_process));
+		}
 		$currencies = Currency::getCurrencies();
 		$authorized_currencies = array_flip(explode(',', $this->currencies));
 		$currencies_used = array();
@@ -379,7 +367,7 @@ class Brinkscheckout extends PaymentModule
 					'state' => ($invoice->country == 'United States' || $invoice->country == 'Canada') ? State::getNameById($invoice->id_state) : 'XX',
 					'zipCode' => $invoice->postcode,
 					'country' => $invoice->country,
-					'email' => $customer->email,
+					'email' => $user->email,
 					'phoneNumber' => $invoice->phone
 				)
 			);
@@ -485,7 +473,7 @@ class Brinkscheckout extends PaymentModule
 		{
 			$order_obj = new Order(Tools::getValue('id_order'));
 			$twocheckout_info = TwocheckoutOrder::getByOrderReference($order_obj->reference);
-			if (isset($twocheckout_info['order_number']) && !empty($twocheckout_info['order_number']))
+			if (!empty($twocheckout_info['order_number']))
 			{
 				if (Configuration::get('TWOCHECKOUT_SANDBOX'))
 					Twocheckout::sandbox(true);
