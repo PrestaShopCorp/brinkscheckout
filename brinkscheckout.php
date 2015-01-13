@@ -46,7 +46,7 @@ class Brinkscheckout extends PaymentModule
 	{
 		$this->name = 'brinkscheckout';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.6.6';
+		$this->version = '1.6.7';
 		$this->author = 'belvg';
 		$this->bootstrap = true;
 		$this->module_key = '';
@@ -59,6 +59,14 @@ class Brinkscheckout extends PaymentModule
 
 		if (!Configuration::get('TWOCHECKOUT_SID') || !isset($this->currencies))
 			$this->warning = $this->l('your Brink\'s vendor account number must be configured in order to use this module correctly');
+		if (!Configuration::get('TWOCHECKOUT_PUBLIC'))
+			$this->warning = $this->l('your Brink\'s publishable key must be configured in order to use this module correctly');
+		if (!Configuration::get('TWOCHECKOUT_PRIVATE'))
+			$this->warning = $this->l('your Brink\'s private key must be configured in order to use this module correctly');
+		if (!Configuration::get('TWOCHECKOUT_ADMINAPI_NAME'))
+			$this->warning = $this->l('your Brink\'s admin api name must be configured in order to use this module correctly');
+		if (!Configuration::get('TWOCHECKOUT_ADMINAPI_PASS'))
+			$this->warning = $this->l('your Brink\'s admin api password must be configured in order to use this module correctly');
 	}
 
 	public function install()
@@ -297,6 +305,11 @@ class Brinkscheckout extends PaymentModule
 
 	public function hookPayment()
 	{
+		if (!Configuration::get('TWOCHECKOUT_SID') || !Configuration::get('TWOCHECKOUT_PUBLIC') ||
+		!Configuration::get('TWOCHECKOUT_PRIVATE') || !Configuration::get('TWOCHECKOUT_ADMINAPI_NAME') ||
+		!Configuration::get('TWOCHECKOUT_ADMINAPI_PASS'))
+			return false;
+
 		$this->context->smarty->assign(array(
 			'this_path' => $this->_path,
 			'this_path_ssl' => Configuration::get('PS_FO_PROTOCOL').$_SERVER['HTTP_HOST'].__PS_BASE_URI__."modules/{$this->name}/",
