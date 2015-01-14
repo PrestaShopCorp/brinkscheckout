@@ -46,14 +46,13 @@ class Brinkscheckout extends PaymentModule
 	{
 		$this->name = 'brinkscheckout';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.6.7';
+		$this->version = '1.6.8';
 		$this->author = 'belvg';
 		$this->bootstrap = true;
 		$this->module_key = '';
 
 		parent::__construct();
 
-		$this->ps_versions_compliancy = array('min' => '1.5.0', 'max' => '1.6.9');
 		$this->displayName = 'Brink\'s Checkout Payment API';
 		$this->description = $this->l('Brink\'s Checkout: accept fast, safe and easy payments. Start selling now!');
 
@@ -290,6 +289,9 @@ class Brinkscheckout extends PaymentModule
 
 	public function hookHeader()
 	{
+		if (!$this->active)
+			return;
+
 		if (!in_array($this->context->controller->php_self, array('order-opc', 'order')))
 			return;
 
@@ -305,6 +307,9 @@ class Brinkscheckout extends PaymentModule
 
 	public function hookPayment()
 	{
+		if (!$this->active)
+			return;
+
 		if (!Configuration::get('TWOCHECKOUT_SID') || !Configuration::get('TWOCHECKOUT_PUBLIC') ||
 		!Configuration::get('TWOCHECKOUT_PRIVATE') || !Configuration::get('TWOCHECKOUT_ADMINAPI_NAME') ||
 		!Configuration::get('TWOCHECKOUT_ADMINAPI_PASS'))
@@ -443,6 +448,12 @@ class Brinkscheckout extends PaymentModule
 
 	public function hookPaymentReturn($params)
 	{
+		if (!$this->active)
+			return;
+
+		if ($params['objOrder']->module != $this->name)
+			return;
+
 		$state = $params['objOrder']->getCurrentState();
 		if ($state == _PS_OS_OUTOFSTOCK_ || $state == _PS_OS_PAYMENT_)
 			$this->context->smarty->assign(array(
@@ -458,6 +469,9 @@ class Brinkscheckout extends PaymentModule
 
 	public function hookAdminOrder()
 	{
+		if (!$this->active)
+			return;
+
 		$this->prepareCredentials();
 		$twocheckout_errors = array();
 		$twocheckout_success = array();
