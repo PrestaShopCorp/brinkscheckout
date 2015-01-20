@@ -240,21 +240,39 @@
 	background: #EBEEF5;
 	border: 1px solid #D5D8DE;
 	margin: 40px auto;
-	padding: 0px 30px 10px;
+	padding: 0 30px 20px;
 	text-align: center;
-	width: 315px;
+	width: 870px;
 }
 .brinkscheckout .formcontainer h2 {
 	color: #008CDD;
 	font-size: 20px;
 	font-weight: normal;
 	line-height: 22px;
-	padding: 0px;
+	padding: 0 0 10px;
 	text-shadow: 0px -1px 0px #DAF2FF;
 }
-.brinkscheckout .formcontainer input {
-	width: 250px;
+.brinkscheckout .formcontainer ul,
+.brinkscheckout .formcontainer li,
+.brinkscheckout .formcontainer .form-group,
+.brinkscheckout .formcontainer .submitbtn {
 	display: inline-block;
+	vertical-align: top;
+	margin: 0 4px;
+}
+.brinkscheckout .formcontainer ul {
+	margin:0;
+}
+.brinkscheckout .formcontainer input {
+	width: 148px;
+	display: inline-block;
+	height: 27px;
+	padding: 4px 8px;
+	font-size: 12px;
+	line-height: 1.42857;
+}
+.brinkscheckout .formcontainer #button {
+	margin-top:0;
 }
 
 .brinkscheckout .sticker {
@@ -272,7 +290,6 @@
 	text-align: center;
 	width: 100px;
 	line-height: 18px;
-	margin-top: 4px;
 	height: 1.2em;
 	margin-bottom: 4px;
 }
