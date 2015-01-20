@@ -456,11 +456,15 @@ class Brinkscheckout extends PaymentModule
 
 		$state = $params['objOrder']->getCurrentState();
 		if ($state == _PS_OS_OUTOFSTOCK_ || $state == _PS_OS_PAYMENT_)
+		{
 			$this->context->smarty->assign(array(
 				'total_to_pay' => Tools::displayPrice($params['total_to_pay'], $params['currencyObj']),
 				'status' => 'ok',
 				'id_order' => $params['objOrder']->id
 			));
+			if (isset($params['objOrder']->reference) && !empty($params['objOrder']->reference))
+				$this->smarty->assign('reference', $params['objOrder']->reference);
+		}
 		else
 			$this->context->smarty->assign('status', 'failed');
 
