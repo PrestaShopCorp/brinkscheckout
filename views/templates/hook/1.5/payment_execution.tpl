@@ -41,8 +41,8 @@
 				</div>
 			{/if}
 			<form action="{$link->getModuleLink('brinkscheckout', 'validation')|escape:false}" method="POST" id="twocheckoutCCForm" onsubmit="return false">
-				<input id="sellerId" type="hidden" value="{$twocheckout_sid|escape:false}">
-				<input id="publishableKey" type="hidden" value="{$twocheckout_public_key|escape:false}">
+				<input id="sellerId" type="hidden" value="{$twocheckout_sid|escape:'html'}">
+				<input id="publishableKey" type="hidden" value="{$twocheckout_public_key|escape:'html'}">
 				<input id="token" name="token" type="hidden" value="">
 				<div class="block-left">
 					<label>{l s='Card Number' mod='brinkscheckout'}</label><br />

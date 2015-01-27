@@ -15,7 +15,7 @@ class Twocheckout_Charge extends Twocheckout
             echo '<input type="submit" value="Click here if you are not redirected automatically" /></form>';
             echo '<script type="text/javascript">document.getElementById("2checkout").submit();</script>';
         } else {
-            echo '<input type="submit" value="'.$type.'" />';
+            echo '<input type="submit" value="'.htmlspecialchars($type, ENT_QUOTES).'" />';
             echo '</form>';
         }
     }
@@ -26,7 +26,7 @@ class Twocheckout_Charge extends Twocheckout
 
         foreach ($params as $key => $value)
         {
-            echo '<input type="hidden" name="'.$key.'" value="'.$value.'"/>';
+            echo '<input type="hidden" name="'.htmlspecialchars($key, ENT_QUOTES).'" value="'.htmlspecialchars($value, ENT_QUOTES).'"/>';
         }
 
         if ($type == 'auto') {
@@ -39,7 +39,7 @@ class Twocheckout_Charge extends Twocheckout
                     setTimeout("submitForm()", 2000);
                   </script>';
         } else {
-            echo '<input type="submit" value="'.$type.'" />';
+            echo '<input type="submit" value="'.htmlspecialchars($type, ENT_QUOTES).'" />';
             echo '</form>';
         }
 

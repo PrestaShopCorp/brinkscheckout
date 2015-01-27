@@ -27,9 +27,9 @@
 	<div class="alert alert-success">
 		{l s='Your order has been completed.' mod='brinkscheckout'}
         {if !isset($reference)}
-            <br /><br />- {l s='Do not forget to insert your order number #%d.' sprintf=$id_order mod='brinkscheckout'}
+            <br /><br />- {l s='Do not forget to insert your order number #%d.' sprintf=$id_order|intval mod='brinkscheckout'}
         {else}
-            <br /><br />- {l s='Do not forget to insert your order reference %s.' sprintf=$reference mod='brinkscheckout'}
+            <br /><br />- {l s='Do not forget to insert your order reference %s.' sprintf=$reference|escape:'html' mod='brinkscheckout'}
         {/if}
         <br /><br />- {l s='Payment amount:' mod='brinkscheckout'} <span class="price"><strong>{$total_to_pay}</strong></span>
         <br /><br />{l s='An email has been sent to you with this information.' mod='brinkscheckout'}
